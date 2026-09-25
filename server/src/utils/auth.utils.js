@@ -24,3 +24,7 @@ export function createRefreshToken({ userID }) {
 
   return refreshToken;
 }
+
+export function readRefreshToken(req, res) {
+  return jwt.verify(refreshToken, config.REFRESH_TOKEN_SECRET);
+}
