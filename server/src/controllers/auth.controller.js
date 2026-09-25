@@ -81,7 +81,7 @@ export const loginUserController = async (req, res) => {
       });
     }
 
-    const user = await userModel.findOne({ email });
+    const user = await userModel.findOne({ email }).select("+password");
 
     if (!user) {
       return res.status(400).json({
@@ -105,7 +105,7 @@ export const loginUserController = async (req, res) => {
       userID: user._id,
     });
 
-    await userModel.findByIdAndUpdate(
+    await userModel.findOneAndUpdate(
       {
         email,
       },
@@ -118,7 +118,7 @@ export const loginUserController = async (req, res) => {
       httpOnly: true,
     });
 
-    return res.status(201).json({
+    return res.status(200).json({
       message: "User logedIn successfully",
       data: {
         user: {
