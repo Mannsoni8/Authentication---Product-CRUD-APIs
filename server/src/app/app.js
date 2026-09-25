@@ -1,6 +1,9 @@
-import express from "express"
+import express from "express";
+import router from "../routes/auth.routes.js";
 
-const app = express()
-app.use(express.json())
+const app = express();
+app.use(express.json());
 
-export default app
+app.use("/api/auth", router);
+
+export default app;
