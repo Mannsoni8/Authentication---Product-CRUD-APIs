@@ -1,6 +1,10 @@
 import bcrypt from "bcryptjs";
 import userModel from "../models/user.model.js";
-import { createAccessToken, createRefreshToken } from "../utils/auth.utils.js";
+import {
+  createAccessToken,
+  createRefreshToken,
+  readRefreshToken,
+} from "../utils/auth.utils.js";
 
 export const registerUserController = async (req, res) => {
   try {
@@ -135,6 +139,64 @@ export const loginUserController = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Internal server error",
+    });
+  }
+};
+
+export const refreshTokenController = async (req, res) => {
+  try {
+    const refreshToken = req.cookieStore.refreshToken;
+
+    if (!token) {
+      return res.status(401).json({
+        message: "Refresh token is not found",
+      });
+    }
+
+    const decoded = readRefreshToken(refreshToken);
+
+    const { userId } = decoded;
+
+    const user = await userModel.findById(userId);
+
+    if (refreshToken !== user.refreshToken) {
+      await userModel.findByIdAndUpdate(user._id, {
+        refreshToken: null,
+      });
+
+      return res.status(401).json({
+        message: "Missmatch refresh token",
+      });
+    }
+
+    const accessToken = createAccessToken({ userId });
+
+    const newRefreshToken = createRefreshToken({ userId });
+
+    await userModel.findByIdAndUpdate(user._id, {
+      refreshToken,
+      newRefreshToken,
+    });
+
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+    });
+
+    res.status(200).json({
+      message: "Token roated successfully",
+      data: {
+        user: {
+          email: user.email,
+          name: user.name,
+          id: user._id,
+        },
+      },
+      accessToken,
+    });
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired refresh token",
     });
   }
 };
