@@ -28,3 +28,7 @@ export function createRefreshToken({ userID }) {
 export function readRefreshToken(req, res) {
   return jwt.verify(refreshToken, config.REFRESH_TOKEN_SECRET);
 }
+
+export function readAccessToken(accessToken) {
+  return jwt.verify(accessToken, config.ACCESS_TOKEN_SECRET);
+}
