@@ -200,3 +200,55 @@ export const refreshTokenController = async (req, res) => {
     });
   }
 };
+
+export const logoutUserController = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    await userModel.findByIdAndUpdate(userId, {
+      $set: {
+        refreshToken: null,
+      },
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+    });
+
+    return res.status(200).json({
+      message: "Logut Successfully",
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+export const geMeController = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error("Erron in geting user:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
