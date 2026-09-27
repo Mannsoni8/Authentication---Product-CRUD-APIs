@@ -44,7 +44,7 @@ export const registerUserController = async (req, res) => {
     });
 
     const refreshToken = createRefreshToken({
-      userID: user._id,
+      userId: user._id,
     });
 
     res.cookie("refreshToken", refreshToken, {
@@ -106,7 +106,7 @@ export const loginUserController = async (req, res) => {
     });
 
     const refreshToken = createRefreshToken({
-      userID: user._id,
+      userId: user._id,
     });
 
     await userModel.findOneAndUpdate(
@@ -145,9 +145,9 @@ export const loginUserController = async (req, res) => {
 
 export const refreshTokenController = async (req, res) => {
   try {
-    const refreshToken = req.cookieStore.refreshToken;
+    const refreshToken = req.cookies.refreshToken;
 
-    if (!token) {
+    if (!refreshToken) {
       return res.status(401).json({
         message: "Refresh token is not found",
       });

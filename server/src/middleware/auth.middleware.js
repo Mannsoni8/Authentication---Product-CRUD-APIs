@@ -1,4 +1,4 @@
-import { readAccessToken } from "../utils/auth.utils";
+import { readAccessToken } from "../utils/auth.utils.js";
 
 export const authMiddleware = (req, res, next) => {
   try {

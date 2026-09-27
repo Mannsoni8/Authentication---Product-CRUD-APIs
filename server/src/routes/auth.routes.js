@@ -20,7 +20,7 @@ router.post("/login", loginValidator, loginUserController);
 
 router.post("/refresh-token", refreshTokenController);
 
-router.post("/logout", authMiddleware, loginUserController);
+router.post("/logout", authMiddleware, logoutUserController);
 
 router.get("/me", authMiddleware, getMeController);
 

@@ -1,10 +1,10 @@
 import jwt from "jsonwebtoken";
 import { config } from "../config/config.js";
 
-export function createAccessToken({ userID }) {
+export function createAccessToken({ userId }) {
   const accessToken = jwt.sign(
     {
-      userID,
+      userId,
     },
     config.ACCESS_TOKEN_SECRET,
     { expiresIn: "15m" },
@@ -13,10 +13,10 @@ export function createAccessToken({ userID }) {
   return accessToken;
 }
 
-export function createRefreshToken({ userID }) {
+export function createRefreshToken({ userId }) {
   const refreshToken = jwt.sign(
     {
-      userID,
+      userId,
     },
     config.REFRESH_TOKEN_SECRET,
     { expiresIn: "7d" },
