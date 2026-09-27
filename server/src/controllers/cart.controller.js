@@ -86,11 +86,79 @@ export const getCartController = async (req, res) => {
     }
 
     return res.status(200).json({
-      success: true,
       data: cart,
     });
   } catch (error) {
     console.error("Erron in geting user cart:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+export const updateCartController = async (req, res) => {
+  try {
+    const { productId, quantity } = req.body;
+
+    if (!productId || !quantity) {
+      return res.status(400).json({
+        message: "Product ID and quantity are required",
+      });
+    }
+
+    if (quantity < 1) {
+      return res.status(400).json({
+        message: "Quantity must be at least 1",
+      });
+    }
+
+    const product = await productModel.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    }
+
+    if (product.stock < quantity) {
+      return res.status(400).json({
+        message: "Insufficient stock",
+      });
+    }
+
+    const cart = await cartModel.findOne({
+      user: req.user.userId,
+    });
+
+    if (!cart) {
+      return res.status(404).json({
+        message: "Cart not found",
+      });
+    }
+
+    const item = cart.items.find(
+      (item) => item.product.toString() === productId,
+    );
+
+    if (!item) {
+      return res.status(404).json({
+        message: "Product is not in cart",
+      });
+    }
+
+    item.quantity = quantity;
+
+    await cart.save();
+
+    await cart.populate("items.product");
+
+    return res.status(200).json({
+      message: "Cart item updated successfully",
+      data: cart,
+    });
+  } catch (error) {
+    console.error("Erron in updating user cart:", error);
 
     return res.status(500).json({
       message: "Internal server error",
