@@ -165,3 +165,54 @@ export const updateItemCartController = async (req, res) => {
     });
   }
 };
+
+export const removeFromCartController = async (req, res) => {
+  try {
+    const { productId } = req.body;
+
+    if (!productId) {
+      return res.status(400).json({
+        message: "Product ID is required",
+      });
+    }
+
+    const cart = await cartModel.findOne({
+      user: req.user.userId,
+    });
+
+    if (!cart) {
+      return res.status(404).json({
+        message: "Cart not found",
+      });
+    }
+
+    const itemExists = cart.items.some(
+      (item) => item.product.toString() === productId,
+    );
+
+    if (!itemExists) {
+      return res.status(404).json({
+        message: "Product is not in cart",
+      });
+    }
+
+    cart.items = cart.items.filter(
+      (item) => item.product.toString() !== productId,
+    );
+
+    await cart.save();
+
+    await cart.populate("items.product");
+
+    return res.status(200).json({
+      message: "Product removed from cart",
+      data: cart,
+    });
+  } catch (error) {
+    console.error("Erron in deleting user cart:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
