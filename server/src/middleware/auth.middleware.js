@@ -1,6 +1,6 @@
-import { createAccessToken, readAccessToken } from "../utils/auth.utils";
+import { readAccessToken } from "../utils/auth.utils";
 
-const authMiddleware = (req, res, next) => {
+export const authMiddleware = (req, res, next) => {
   try {
     const accessToken = req.headers.authorization?.split(" ")[1];
 
@@ -17,7 +17,6 @@ const authMiddleware = (req, res, next) => {
     next();
   } catch (error) {
     return res.status(401).json({
-      success: false,
       message: "Invalid or expired access token",
     });
   }

@@ -227,7 +227,7 @@ export const logoutUserController = async (req, res) => {
   }
 };
 
-export const geMeController = async (req, res) => {
+export const getMeController = async (req, res) => {
   try {
     const user = await userModel.findById(req.user.userId);
 
