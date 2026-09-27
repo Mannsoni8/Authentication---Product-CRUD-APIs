@@ -35,3 +35,39 @@ export const createProductController = async (req, res) => {
     });
   }
 };
+
+export const getProductsController = async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1));
+
+    const skip = (page - 1) * limit;
+
+    const [products, totalProducts] = await Promise.all([
+      productModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
+
+      productModel.countDocuments(),
+    ]);
+
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    return res.status(200).json({
+      data: products,
+      pagination: {
+        currentPage: page,
+        limit,
+        totalProducts,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    });
+  } catch (error) {
+    console.error("Get products error:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
