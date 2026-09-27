@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   createProductController,
+  deleteProductController,
   getProductByIdController,
   getProductsController,
   updateProductController,
@@ -17,5 +18,7 @@ router.get("/", getProductsController);
 router.get("/:id", getProductByIdController);
 
 router.put("/:id", authMiddleware, updateProductController);
+
+router.delete("/:id", authMiddleware, deleteProductController);
 
 export default router;
