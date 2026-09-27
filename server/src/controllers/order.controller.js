@@ -103,3 +103,32 @@ export const getOrdersController = async (req, res) => {
     });
   }
 };
+
+export const getOrderByIdController = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const order = await orderModel
+      .findOne({
+        _id: id,
+        user: req.user.userId,
+      })
+      .populate("items.product");
+
+    if (!order) {
+      return res.status(404).json({
+        message: "Order not found",
+      });
+    }
+
+    return res.status(200).json({
+      data: order,
+    });
+  } catch (error) {
+    console.error("Erron in geting order:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
