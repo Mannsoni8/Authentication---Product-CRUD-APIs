@@ -11,6 +11,13 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
-app.use(errorMiddleware)
+
+app.use((req, res, next) => {
+  res.status(404).json({
+    message: `Route not found: ${req.method} ${req.originalUrl}`,
+  });
+});
+
+app.use(errorMiddleware);
 
 export default app;
