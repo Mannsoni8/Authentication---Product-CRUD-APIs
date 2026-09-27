@@ -97,7 +97,7 @@ export const getCartController = async (req, res) => {
   }
 };
 
-export const updateCartController = async (req, res) => {
+export const updateItemCartController = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
 
