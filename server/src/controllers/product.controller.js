@@ -96,3 +96,56 @@ export const getProductByIdController = async (req, res) => {
     });
   }
 };
+
+export const updateProductController = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { name, description, price, category, stock, image } = req.body;
+
+    const product = await productModel.findById(id);
+
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    }
+
+    if (name !== undefined) {
+      product.name = name;
+    }
+
+    if (description !== undefined) {
+      product.description = description;
+    }
+
+    if (price !== undefined) {
+      product.price = price;
+    }
+
+    if (category !== undefined) {
+      product.category = category;
+    }
+
+    if (stock !== undefined) {
+      product.stock = stock;
+    }
+
+    if (image !== undefined) {
+      product.image = image;
+    }
+
+    await product.save();
+
+    return res.status(200).json({
+      message: "Product updated successfully",
+      product,
+    });
+  } catch (error) {
+    console.error("Update product error:", error);
+
+    return res.status(400).json({
+      message: "Invalid product ID or product data",
+    });
+  }
+};
