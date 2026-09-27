@@ -10,4 +10,6 @@ router.get("/", authMiddleware, getCartController);
 
 router.put("/", authMiddleware, updateItemCartController);
 
+router.delete("/", authMiddleware, removeFromCartController);
+
 export default router;
