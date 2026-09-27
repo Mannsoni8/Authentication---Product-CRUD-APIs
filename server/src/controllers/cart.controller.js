@@ -55,7 +55,7 @@ export const addToCartController = async (req, res) => {
       }
       await cart.save();
     }
-    await cart.populate("items.products");
+    await cart.populate("items.product");
 
     return res.status(200).json({
       message: "Product added to cart",
