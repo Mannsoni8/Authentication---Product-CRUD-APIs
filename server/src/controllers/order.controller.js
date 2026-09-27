@@ -75,7 +75,28 @@ export const createOrderController = async (req, res) => {
       data: order,
     });
   } catch (error) {
-     console.error("Erron in order:", error);
+    console.error("Erron in order:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+export const getOrdersController = async (req, res) => {
+  try {
+    const orders = await orderModel
+      .find({
+        user: req.user.userId,
+      })
+      .populate("items.product")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      data: orders,
+    });
+  } catch (error) {
+    console.error("Erron in geting order:", error);
 
     return res.status(500).json({
       message: "Internal server error",
