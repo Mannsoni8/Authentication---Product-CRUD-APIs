@@ -8,6 +8,27 @@ import {
   readRefreshToken,
 } from "../utils/auth.utils.js";
 
+/**
+ * Returns cookie options based on the current environment.
+ *
+ * WHY: In production (Vercel), the frontend and backend are on different domains.
+ * Browsers block cookies with SameSite=None unless they are also Secure (HTTPS).
+ * In development (localhost), we use lax for better compatibility.
+ *
+ * WHAT: This helper creates appropriate cookie settings for both environments.
+ */
+const getCookieOptions = () => {
+  // Check if we're in production environment
+  const isProduction = process.env.NODE_ENV === "production";
+
+  return {
+    httpOnly: true, // Prevents JavaScript from reading the cookie (XSS protection)
+    secure: isProduction, // Only send cookie over HTTPS in production
+    sameSite: isProduction ? "none" : "lax", // CSRF protection: "none" for cross-site (production), "lax" for same-site (dev)
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds (matches refresh token expiry)
+  };
+};
+
 export const registerUserController = async (req, res) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
@@ -58,9 +79,8 @@ export const registerUserController = async (req, res) => {
     });
 
     // Store raw token only in HTTP-only cookie
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-    });
+    // Use environment-aware cookie options for cross-origin support in production
+    res.cookie("refreshToken", refreshToken, getCookieOptions());
 
     return res.status(201).json({
       success: true,
@@ -126,9 +146,8 @@ export const loginUserController = async (req, res) => {
     });
 
     // Send raw refresh token to browser
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-    });
+    // Use environment-aware cookie options for cross-origin support in production
+    res.cookie("refreshToken", refreshToken, getCookieOptions());
 
     return res.status(200).json({
       success: true,
@@ -208,9 +227,8 @@ export const refreshTokenController = async (req, res) => {
     });
 
     // Send new raw refresh token
-    res.cookie("refreshToken", newRefreshToken, {
-      httpOnly: true,
-    });
+    // Use environment-aware cookie options for cross-origin support in production
+    res.cookie("refreshToken", newRefreshToken, getCookieOptions());
 
     return res.status(200).json({
       success: true,
@@ -245,9 +263,9 @@ export const logoutUserController = async (req, res) => {
       },
     });
 
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-    });
+    // Clear the refresh token cookie with the same options used to set it
+    // This ensures the cookie is properly cleared in both development and production
+    res.clearCookie("refreshToken", getCookieOptions());
 
     return res.status(200).json({
       success: true,
