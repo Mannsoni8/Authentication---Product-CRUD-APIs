@@ -75,10 +75,10 @@ export const createOrderController = async (req, res) => {
       data: createdOrder,
     });
   } catch (error) {
-    console.error("Erron in creating order:", error);
-
-    return res.status(500).json({
-      message: "Internal server error",
+    console.error("Error in creating order:", error);
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
+      message: error.message || "Internal server error",
     });
   } finally {
     await session.endSession();
@@ -127,7 +127,7 @@ export const getOrdersController = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Erron in geting order:", error);
+    console.error("Error in geting order:", error);
 
     return res.status(500).json({
       message: "Internal server error",
@@ -156,7 +156,7 @@ export const getOrderByIdController = async (req, res) => {
       data: order,
     });
   } catch (error) {
-    console.error("Erron in geting order:", error);
+    console.error("Error in geting order:", error);
 
     return res.status(500).json({
       message: "Internal server error",
@@ -218,10 +218,10 @@ export const cancelOrderController = async (req, res) => {
       data: cancelledOrder,
     });
   } catch (error) {
-    console.error("Erron in canceling the order:", error);
-
-    return res.status(500).json({
-      message: "Internal server error",
+    console.error("Error in canceling the order:", error);
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
+      message: error.message || "Internal server error",
     });
   } finally {
     await session.endSession();
@@ -250,7 +250,7 @@ export const updateOrderStatusController = async (req, res) => {
         cancelled: [],
       };
 
-      if (!allowedTransitions[order.status].includes(req.body.status)) {
+      if (!allowedTransitions[order.status]?.includes(req.body.status)) {
         const error = new Error(
           `Cannot change order status from ${order.status} to ${req.body.status}`,
         );
@@ -258,10 +258,19 @@ export const updateOrderStatusController = async (req, res) => {
         throw error;
       }
 
+      // If cancelling an order, restock items
+      if (req.body.status === "cancelled" && order.status !== "cancelled") {
+        for (const item of order.items) {
+          await productModel.findByIdAndUpdate(
+            item.product,
+            { $inc: { stock: item.quantity } },
+            { session },
+          );
+        }
+      }
+
       order.status = req.body.status;
-
       await order.save({ session });
-
       updatedOrder = order;
     });
 
@@ -273,10 +282,10 @@ export const updateOrderStatusController = async (req, res) => {
       data: updatedOrder,
     });
   } catch (error) {
-    console.error("Erron in updating status of order:", error);
-
-    return res.status(500).json({
-      message: "Internal server error",
+    console.error("Error in updating status of order:", error);
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
+      message: error.message || "Internal server error",
     });
   } finally {
     await session.endSession();

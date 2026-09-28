@@ -1,14 +1,36 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { getProductById } from "../../services/product.service";
+import { addToCart } from "../../services/cart.service";
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const [quantity, setQuantity] = useState(1);
+  const [cartLoading, setCartLoading] = useState(false);
+  const [cartMessage, setCartMessage] = useState("");
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const handleAddToCart = async () => {
+    try {
+      setCartLoading(true);
+      setCartMessage("");
+
+      await addToCart(product._id, quantity);
+
+      setCartMessage("Product added to cart successfully.");
+    } catch (error) {
+      setCartMessage(
+        error.response?.data?.message || "Failed to add product to cart",
+      );
+    } finally {
+      setCartLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -16,9 +38,7 @@ const ProductDetails = () => {
         const response = await getProductById(id);
         setProduct(response.data);
       } catch (error) {
-        setError(
-          error.response?.data?.message || "Failed to load product"
-        );
+        setError(error.response?.data?.message || "Failed to load product");
       } finally {
         setLoading(false);
       }
@@ -42,8 +62,7 @@ const ProductDetails = () => {
 
         <button
           onClick={() => navigate("/products")}
-          className="rounded-lg bg-black px-5 py-2 text-white hover:bg-gray-800"
-        >
+          className="rounded-lg bg-black px-5 py-2 text-white hover:bg-gray-800">
           Back to Products
         </button>
       </main>
@@ -74,9 +93,7 @@ const ProductDetails = () => {
             {product.name}
           </h1>
 
-          <p className="mb-6 text-gray-600">
-            {product.description}
-          </p>
+          <p className="mb-6 text-gray-600">{product.description}</p>
 
           <p className="mb-4 text-3xl font-bold text-gray-900">
             ₹{product.price}
@@ -90,8 +107,7 @@ const ProductDetails = () => {
 
           <button
             disabled={product.stock === 0}
-            className="w-full rounded-lg bg-black py-3 font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
-          >
+            className="w-full rounded-lg bg-black py-3 font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400">
             Add to Cart
           </button>
         </div>

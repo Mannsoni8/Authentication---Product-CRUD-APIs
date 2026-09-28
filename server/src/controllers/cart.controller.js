@@ -9,7 +9,7 @@ export const addToCartController = async (req, res) => {
 
     if (!product) {
       return res.status(404).json({
-        message: "Produc not found",
+        message: "Product not found",
       });
     }
 
@@ -62,7 +62,7 @@ export const addToCartController = async (req, res) => {
       data: cart,
     });
   } catch (error) {
-    console.error("Erron in geting cart:", error);
+    console.error("Error in geting cart:", error);
 
     return res.status(500).json({
       message: "Internal server error",
@@ -89,7 +89,7 @@ export const getCartController = async (req, res) => {
       data: cart,
     });
   } catch (error) {
-    console.error("Erron in geting user cart:", error);
+    console.error("Error in geting user cart:", error);
 
     return res.status(500).json({
       message: "Internal server error",
@@ -158,7 +158,7 @@ export const updateItemCartController = async (req, res) => {
       data: cart,
     });
   } catch (error) {
-    console.error("Erron in updating user cart:", error);
+    console.error("Error in updating user cart:", error);
 
     return res.status(500).json({
       message: "Internal server error",
@@ -209,7 +209,7 @@ export const removeFromCartController = async (req, res) => {
       data: cart,
     });
   } catch (error) {
-    console.error("Erron in deleting user cart:", error);
+    console.error("Error in deleting user cart:", error);
 
     return res.status(500).json({
       message: "Internal server error",
@@ -238,7 +238,7 @@ export const clearCartController = async (req, res) => {
       data: cart,
     });
   } catch (error) {
-    console.error("Erron in clearing user cart:", error);
+    console.error("Error in clearing user cart:", error);
 
     return res.status(500).json({
       message: "Internal server error",

@@ -5,11 +5,10 @@ import {
   logoutUser,
   refreshAccessToken,
   registerUser,
-} from "../services/auth.service";
+} from "../services/auth.service.js";
 
-import { setAccessToken as setApiAccessToken } from "../services/api";
-import { getProductById } from "../../services/product.service";
-import { addToCart } from "../../services/cart.service";
+import { setAccessToken as setApiAccessToken } from "../services/api.js";
+
 
 export const AuthContext = createContext(null);
 
@@ -17,9 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [quantity, setQuantity] = useState(1);
-  const [cartLoading, setCartLoading] = useState(false);
-  const [cartMessage, setCartMessage] = useState("");
+
 
   const login = async (credentials) => {
     const data = await loginUser(credentials);
@@ -59,22 +56,6 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  const handleAddToCart = async () => {
-    try {
-      setCartLoading(true);
-      setCartMessage("");
-
-      await addToCart(product._id, quantity);
-
-      setCartMessage("Product added to cart successfully.");
-    } catch (error) {
-      setCartMessage(
-        error.response?.data?.message || "Failed to add product to cart",
-      );
-    } finally {
-      setCartLoading(false);
-    }
-  };
 
   const loadUser = async () => {
     try {

@@ -39,8 +39,7 @@ export const createProductController = async (req, res) => {
 export const getProductsController = async (req, res) => {
   try {
     const page = Math.max(parseInt(req.query.page) || 1, 1);
-
-    const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 50));
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 50);
 
     const { category, minPrice, maxPrice, search } = req.query;
 
@@ -72,9 +71,8 @@ export const getProductsController = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const [products, totalProducts] = await Promise.all([
-      productModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
-
-      productModel.countDocuments(),
+      productModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      productModel.countDocuments(filter),
     ]);
 
     const totalPages = Math.ceil(totalProducts / limit);
@@ -138,9 +136,9 @@ export const updateProductController = async (req, res) => {
     );
 
     if (!updatedProduct) {
-      const error = new Error("Product not found");
-      error.statusCode = 404;
-      throw error;
+      return res.status(404).json({
+        message: "Product not found",
+      });
     }
 
     return res.status(200).json({
