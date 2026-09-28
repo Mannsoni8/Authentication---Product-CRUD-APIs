@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import cartModel from "../models/cart.model";
-import orderModel from "../models/order.model";
-import productModel from "../models/product.model";
+import cartModel from "../models/cart.model.js";
+import orderModel from "../models/order.model.js";
+import productModel from "../models/product.model.js";
 
 export const createOrderController = async (req, res) => {
   const session = await mongoose.startSession();
@@ -71,7 +71,6 @@ export const createOrderController = async (req, res) => {
     await createdOrder.populate("items.product");
 
     return res.status(201).json({
-  
       message: "Order created successfully",
       data: createdOrder,
     });
@@ -88,6 +87,16 @@ export const createOrderController = async (req, res) => {
 
 export const getOrdersController = async (req, res) => {
   try {
+    const { status } = req.query;
+
+    const filter = {
+      user: req.user.userId,
+    };
+
+    if (status) {
+      filter.status = status;
+    }
+
     const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 50);
 
@@ -95,17 +104,13 @@ export const getOrdersController = async (req, res) => {
 
     const [orders, totalOrders] = await Promise.all([
       orderModel
-        .find({
-          user: req.user.userId,
-        })
+        .find(filter)
         .populate("items.product")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
 
-      orderModel.countDocuments({
-        user: req.user.userId,
-      }),
+      orderModel.countDocuments(filter),
     ]);
 
     const totalPages = Math.ceil(totalOrders / limit);
@@ -160,99 +165,112 @@ export const getOrderByIdController = async (req, res) => {
 };
 
 export const cancelOrderController = async (req, res) => {
-  try {
-    const { id } = req.params;
+  const session = await mongoose.startSession();
 
-    const order = await orderModel.findOne({
-      _id: id,
-      user: req.user.userId,
+  try {
+    let cancelledOrder;
+
+    await session.withTransaction(async () => {
+      const order = await orderModel
+        .findOne({
+          _id: req.params.id,
+          user: req.user.userId,
+        })
+        .session(session);
+
+      if (!order) {
+        const error = new Error("Order not found");
+        error.statusCode = 404;
+        throw error;
+      }
+
+      if (!["pending", "confirmed"].includes(order.status)) {
+        const error = new Error(
+          "Order cannot be cancelled in its current status",
+        );
+        error.statusCode = 400;
+        throw error;
+      }
+
+      for (const item of order.items) {
+        await productModel.findByIdAndUpdate(
+          item.product,
+          {
+            $inc: {
+              stock: item.quantity,
+            },
+          },
+          { session },
+        );
+      }
+
+      order.status = "cancelled";
+
+      await order.save({ session });
+
+      cancelledOrder = order;
     });
 
-    if (!order) {
-      return res.status(404).json({
-        message: "Order not found",
-      });
-    }
-
-    if (!["pending", "confirmed"].includes(order.status)) {
-      return res.status(400).json({
-        message: "Order cannot be cancelled at this stage",
-      });
-    }
-
-    order.status = "cancelled";
-
-    await order.save();
-
-    for (const item of order.items) {
-      await productModel.findByIdAndUpdate(item.product, {
-        $inc: {
-          stock: item.quantity,
-        },
-      });
-    }
-
-    await order.populate("items.product");
+    await cancelledOrder.populate("items.product");
 
     return res.status(200).json({
-      success: true,
       message: "Order cancelled successfully",
-      data: order,
+      data: cancelledOrder,
     });
   } catch (error) {
-    console.error("Erron in cancleing order:", error);
+    console.error("Erron in canceling the order:", error);
 
     return res.status(500).json({
       message: "Internal server error",
     });
+  } finally {
+    await session.endSession();
   }
 };
 
 export const updateOrderStatusController = async (req, res) => {
+  const session = await mongoose.startSession();
   try {
-    const { id } = req.params;
-    const { status } = req.body;
+    let updatedOrder;
 
-    const allowedStatuses = [
-      "pending",
-      "confirmed",
-      "shipped",
-      "delivered",
-      "cancelled",
-    ];
+    await session.withTransaction(async () => {
+      const order = await orderModel.findById(req.params.id).session(session);
 
-    if (!allowedStatuses.includes(status)) {
-      return res.status(400).json({
-        message: "Invalid order status",
-      });
-    }
+      if (!order) {
+        const error = new Error("Order not found");
+        error.statusCode = 404;
+        throw error;
+      }
 
-    const order = await orderModel.findOne({
-      _id: id,
-      user: req.user.userId,
+      const allowedTransitions = {
+        pending: ["confirmed", "cancelled"],
+        confirmed: ["shipped", "cancelled"],
+        shipped: ["delivered"],
+        delivered: [],
+        cancelled: [],
+      };
+
+      if (!allowedTransitions[order.status].includes(req.body.status)) {
+        const error = new Error(
+          `Cannot change order status from ${order.status} to ${req.body.status}`,
+        );
+        error.statusCode = 400;
+        throw error;
+      }
+
+      order.status = req.body.status;
+
+      await order.save({ session });
+
+      updatedOrder = order;
     });
 
-    if (!order) {
-      return res.status(404).json({
-        message: "Order not found",
-      });
-    }
-
-    if (order.status === "cancelled") {
-      return res.status(400).json({
-        message: "Cancelled order cannot be updated",
-      });
-    }
-
-    order.status = status;
-
-    await order.save();
-
-    await order.populate("items.product");
+    await updatedOrder.populate("items.product");
 
     return res.status(200).json({
+      success: true,
       message: "Order status updated successfully",
-      data: order,
+      data: updatedOrder,
     });
   } catch (error) {
     console.error("Erron in updating status of order:", error);
@@ -260,5 +278,7 @@ export const updateOrderStatusController = async (req, res) => {
     return res.status(500).json({
       message: "Internal server error",
     });
+  } finally {
+    await session.endSession();
   }
 };

@@ -40,7 +40,34 @@ export const getProductsController = async (req, res) => {
   try {
     const page = Math.max(parseInt(req.query.page) || 1, 1);
 
-    const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1));
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 50));
+
+    const { category, minPrice, maxPrice, search } = req.query;
+
+    const filter = {};
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (category) {
+      filter.category = category;
+    }
+
+    if (minPrice || maxPrice) {
+      filter.price = {};
+
+      if (minPrice) {
+        filter.price.$gte = Number(minPrice);
+      }
+
+      if (maxPrice) {
+        filter.price.$lte = Number(maxPrice);
+      }
+    }
 
     const skip = (page - 1) * limit;
 
@@ -101,45 +128,25 @@ export const updateProductController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { name, description, price, category, stock, image } = req.body;
+    const updatedProduct = await productModel.findByIdAndUpdate(
+      id,
+      { $set: req.body },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
 
-    const product = await productModel.findById(id);
-
-    if (!product) {
-      return res.status(404).json({
-        message: "Product not found",
-      });
+    if (!updatedProduct) {
+      const error = new Error("Product not found");
+      error.statusCode = 404;
+      throw error;
     }
-
-    if (name !== undefined) {
-      product.name = name;
-    }
-
-    if (description !== undefined) {
-      product.description = description;
-    }
-
-    if (price !== undefined) {
-      product.price = price;
-    }
-
-    if (category !== undefined) {
-      product.category = category;
-    }
-
-    if (stock !== undefined) {
-      product.stock = stock;
-    }
-
-    if (image !== undefined) {
-      product.image = image;
-    }
-
-    await product.save();
 
     return res.status(200).json({
+      success: true,
       message: "Product updated successfully",
-      product,
+      data: updatedProduct,
     });
   } catch (error) {
     console.error("Update product error:", error);
@@ -164,6 +171,7 @@ export const deleteProductController = async (req, res) => {
 
     return res.status(200).json({
       message: "Product deleted successfully",
+      data: product,
     });
   } catch (error) {
     console.error("Delete product error:", error);

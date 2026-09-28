@@ -1,10 +1,12 @@
 import jwt from "jsonwebtoken";
 import { config } from "../config/config.js";
+import crypto from "crypto";
 
-export function createAccessToken({ userId }) {
+export function createAccessToken({ userId, role }) {
   const accessToken = jwt.sign(
     {
       userId,
+      role,
     },
     config.ACCESS_TOKEN_SECRET,
     { expiresIn: "15m" },
@@ -13,10 +15,11 @@ export function createAccessToken({ userId }) {
   return accessToken;
 }
 
-export function createRefreshToken({ userId }) {
+export function createRefreshToken({ userId, role }) {
   const refreshToken = jwt.sign(
     {
       userId,
+      role,
     },
     config.REFRESH_TOKEN_SECRET,
     { expiresIn: "7d" },
@@ -31,4 +34,11 @@ export function readRefreshToken(req, res) {
 
 export function readAccessToken(accessToken) {
   return jwt.verify(accessToken, config.ACCESS_TOKEN_SECRET);
+}
+
+export function hashRefreshToken(token) {
+  return crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
 }

@@ -1,8 +1,10 @@
 import bcrypt from "bcryptjs";
 import userModel from "../models/user.model.js";
+
 import {
   createAccessToken,
   createRefreshToken,
+  hashRefreshToken,
   readRefreshToken,
 } from "../utils/auth.utils.js";
 
@@ -12,12 +14,14 @@ export const registerUserController = async (req, res) => {
 
     if (!name || !email || !password || !confirmPassword) {
       return res.status(400).json({
-        message: "All field are required",
+        success: false,
+        message: "All fields are required",
       });
     }
 
     if (password !== confirmPassword) {
       return res.status(400).json({
+        success: false,
         message: "Passwords do not match",
       });
     }
@@ -41,18 +45,21 @@ export const registerUserController = async (req, res) => {
 
     const accessToken = createAccessToken({
       userId: user._id,
+      role: user.role,
     });
 
     const refreshToken = createRefreshToken({
       userId: user._id,
     });
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
+    // Store only hashed refresh token in DB
+    await userModel.findByIdAndUpdate(user._id, {
+      refreshToken: hashRefreshToken(refreshToken),
     });
 
-    await userModel.findByIdAndUpdate(user._id, {
-      refreshToken,
+    // Store raw token only in HTTP-only cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
     });
 
     return res.status(201).json({
@@ -81,7 +88,8 @@ export const loginUserController = async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({
-        message: "All field are required",
+        success: false,
+        message: "All fields are required",
       });
     }
 
@@ -89,7 +97,8 @@ export const loginUserController = async (req, res) => {
 
     if (!user) {
       return res.status(400).json({
-        message: "Invalid cedentials",
+        success: false,
+        message: "Invalid credentials",
       });
     }
 
@@ -97,38 +106,39 @@ export const loginUserController = async (req, res) => {
 
     if (!isPasswordCorrect) {
       return res.status(400).json({
-        message: "Invalid cedentials",
+        success: false,
+        message: "Invalid credentials",
       });
     }
 
     const accessToken = createAccessToken({
       userId: user._id,
+      role: user.role,
     });
 
     const refreshToken = createRefreshToken({
       userId: user._id,
     });
 
-    await userModel.findOneAndUpdate(
-      {
-        email,
-      },
-      {
-        refreshToken,
-      },
-    );
+    // Store hashed refresh token
+    await userModel.findByIdAndUpdate(user._id, {
+      refreshToken: hashRefreshToken(refreshToken),
+    });
 
+    // Send raw refresh token to browser
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
     });
 
     return res.status(200).json({
-      message: "User logedIn successfully",
+      success: true,
+      message: "User logged in successfully",
       data: {
         user: {
           id: user._id,
           name: user.name,
           email: user.email,
+          role: user.role,
         },
       },
       accessToken,
@@ -149,51 +159,75 @@ export const refreshTokenController = async (req, res) => {
 
     if (!refreshToken) {
       return res.status(401).json({
-        message: "Refresh token is not found",
+        success: false,
+        message: "Refresh token not found",
       });
     }
 
     const decoded = readRefreshToken(refreshToken);
-
     const { userId } = decoded;
 
-    const user = await userModel.findById(userId);
+    const user = await userModel.findById(userId).select("+refreshToken");
 
-    if (refreshToken !== user.refreshToken) {
+    if (!user || !user.refreshToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid refresh token",
+      });
+    }
+
+    // Compare hash of cookie token with hash stored in DB
+    const hashedRefreshToken = hashRefreshToken(refreshToken);
+
+    if (hashedRefreshToken !== user.refreshToken) {
+      // Possible token reuse -> invalidate stored token
       await userModel.findByIdAndUpdate(user._id, {
         refreshToken: null,
       });
 
       return res.status(401).json({
-        message: "Missmatch refresh token",
+        success: false,
+        message: "Invalid refresh token",
       });
     }
 
-    const accessToken = createAccessToken({ userId });
-
-    const newRefreshToken = createRefreshToken({ userId });
-
-    await userModel.findByIdAndUpdate(user._id, {
-      refreshToken,
-      newRefreshToken,
+    // Create new access token
+    const accessToken = createAccessToken({
+      userId: user._id,
+      role: user.role,
     });
 
+    // Rotate refresh token
+    const newRefreshToken = createRefreshToken({
+      userId: user._id,
+    });
+
+    // Store hash of NEW refresh token
+    await userModel.findByIdAndUpdate(user._id, {
+      refreshToken: hashRefreshToken(newRefreshToken),
+    });
+
+    // Send new raw refresh token
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
     });
 
-    res.status(200).json({
-      message: "Token roated successfully",
+    return res.status(200).json({
+      success: true,
+      message: "Token rotated successfully",
       data: {
         user: {
-          email: user.email,
-          name: user.name,
           id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
         },
       },
       accessToken,
     });
   } catch (error) {
+    console.error("Refresh token error:", error);
+
     return res.status(401).json({
       success: false,
       message: "Invalid or expired refresh token",
@@ -216,12 +250,14 @@ export const logoutUserController = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: "Logut Successfully",
+      success: true,
+      message: "Logout successful",
     });
   } catch (error) {
     console.error("Logout error:", error);
 
     return res.status(500).json({
+      success: false,
       message: "Internal server error",
     });
   }
@@ -233,21 +269,25 @@ export const getMeController = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({
+        success: false,
         message: "User not found",
       });
     }
 
     return res.status(200).json({
+      success: true,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
       },
     });
   } catch (error) {
-    console.error("Erron in geting user:", error);
+    console.error("Error in getting user:", error);
 
     return res.status(500).json({
+      success: false,
       message: "Internal server error",
     });
   }

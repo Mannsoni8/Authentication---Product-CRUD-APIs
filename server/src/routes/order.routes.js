@@ -1,22 +1,24 @@
 import express from "express";
-import { authMiddleware } from "../middleware/auth.middleware";
+import { authMiddleware } from "../middleware/auth.middleware.js";
 import {
   cancelOrderController,
   createOrderController,
-  getOrderByIdControl,
-  updateOrderStatusControllerler,
+  getOrderByIdController,
+  updateOrderStatusController,
   getOrdersController,
-} from "../controllers/order.controller";
+} from "../controllers/order.controller.js";
 import {
   orderIdValidator,
+  orderStatusQueryValidator,
   updateOrderStatusValidator,
-} from "../validators/order.validator";
+} from "../validators/order.validator.js";
+import { adminMiddleware } from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
 router.post("/", authMiddleware, createOrderController);
 
-router.get("/", authMiddleware, getOrdersController);
+router.get("/", authMiddleware, orderStatusQueryValidator ,getOrdersController);
 
 router.get("/:id", authMiddleware, orderIdValidator, getOrderByIdController);
 
@@ -30,6 +32,7 @@ router.patch(
 router.patch(
   "/:id/status",
   authMiddleware,
+  adminMiddleware,
   updateOrderStatusValidator,
   updateOrderStatusController,
 );

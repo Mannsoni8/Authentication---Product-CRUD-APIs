@@ -1,7 +1,10 @@
 import { body, param, validationResult } from "express-validator";
 
 export const createProductValidator = [
-  body("name").trim().notEmpty().withMessage("Product name is required"),
+  body("name")
+  .trim()
+  .notEmpty()
+  .withMessage("Product name is required"),
 
   body("description")
     .trim()
