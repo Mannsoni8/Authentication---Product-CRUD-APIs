@@ -6,10 +6,6 @@ await connectDB();
 
 const PORT = config.PORT;
 
-app.get('/',()=>{
-  console.log("server is running")
-})
-
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
