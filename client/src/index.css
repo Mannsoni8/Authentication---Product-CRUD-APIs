@@ -1,1 +1,77 @@
 @import "tailwindcss";
+
+/* Base theme variables */
+:root {
+  /* Light mode colors */
+  --color-bg-primary: 249 250 251; /* gray-50 */
+  --color-bg-secondary: 255 255 255; /* white */
+  --color-bg-tertiary: 243 244 246; /* gray-100 */
+
+  --color-text-primary: 17 24 39; /* gray-900 */
+  --color-text-secondary: 75 85 99; /* gray-600 */
+  --color-text-tertiary: 156 163 175; /* gray-400 */
+
+  --color-border: 229 231 235; /* gray-200 */
+  --color-border-hover: 209 213 219; /* gray-300 */
+
+  --color-primary: 99 102 241; /* indigo-500 */
+  --color-primary-hover: 79 70 229; /* indigo-600 */
+
+  --color-accent: 16 185 129; /* emerald-500 */
+}
+
+/* Dark mode colors */
+.dark {
+  --color-bg-primary: 17 24 39; /* gray-900 */
+  --color-bg-secondary: 31 41 55; /* gray-800 */
+  --color-bg-tertiary: 55 65 81; /* gray-700 */
+
+  --color-text-primary: 243 244 246; /* gray-100 */
+  --color-text-secondary: 209 213 219; /* gray-300 */
+  --color-text-tertiary: 156 163 175; /* gray-400 */
+
+  --color-border: 55 65 81; /* gray-700 */
+  --color-border-hover: 75 85 99; /* gray-600 */
+
+  --color-primary: 129 140 248; /* indigo-400 */
+  --color-primary-hover: 165 180 252; /* indigo-300 */
+
+  --color-accent: 52 211 153; /* emerald-400 */
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(var(--color-bg-tertiary));
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-border-hover));
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--color-text-tertiary));
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: rgb(var(--color-bg-secondary));
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-border));
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--color-border-hover));
+}

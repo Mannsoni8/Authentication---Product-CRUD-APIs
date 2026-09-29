@@ -1,12 +1,14 @@
 import { createBrowserRouter } from "react-router";
-import Home from "../pages/Home";
-import Layout from "../components/layout/Layout";
-import Login from "../pages/auth/Login";
-import Register from "../pages/auth/Register";
-import Products from "../pages/products/Products";
-import Cart from "../pages/cart/Cart";
-import Orders from "../pages/orders/Orders";
-import OrderDetails from "../pages/orders/OrderDetails";
+import Home from "../pages/Home.jsx";
+import Layout from "../components/layout/Layout.jsx";
+import Login from "../pages/auth/Login.jsx";
+import Register from "../pages/auth/Register.jsx";
+import Products from "../pages/products/Products.jsx";
+import ProductDetails from "../pages/products/ProductDetails.jsx";
+import Cart from "../pages/cart/Cart.jsx";
+import Orders from "../pages/orders/Orders.jsx";
+import OrderDetails from "../pages/orders/OrderDetails.jsx";
+import ProtectedRoute from "../components/ProtectedRoute.jsx";
 
 const router = createBrowserRouter([
   {
@@ -29,16 +31,20 @@ const router = createBrowserRouter([
         element: <Products />,
       },
       {
+        path: "/products/:id",
+        element: <ProductDetails />,
+      },
+      {
         path: "/cart",
-        element: <Cart />,
+        element: <ProtectedRoute element={<Cart />} />,
       },
       {
         path: "/orders",
-        element: <Orders />,
+        element: <ProtectedRoute element={<Orders />} />,
       },
       {
         path: "/orders/:id",
-        element: <OrderDetails />,
+        element: <ProtectedRoute element={<OrderDetails />} />,
       },
     ],
   },

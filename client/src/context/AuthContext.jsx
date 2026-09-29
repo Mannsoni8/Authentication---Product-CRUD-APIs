@@ -39,11 +39,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await logoutUser();
-
-    setUser(null);
-    setAccessToken(null);
-    setApiAccessToken(null);
+    try {
+      await logoutUser();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setUser(null);
+      setAccessToken(null);
+      setApiAccessToken(null);
+    }
   };
 
   const refresh = async () => {
@@ -59,24 +63,46 @@ export const AuthProvider = ({ children }) => {
 
   const loadUser = async () => {
     try {
-      const data = await getMe();
+      // Check if we have a stored access token from a previous session
+      const storedToken = sessionStorage.getItem("accessToken");
 
+      if (storedToken) {
+        setAccessToken(storedToken);
+        setApiAccessToken(storedToken);
+      }
+
+      // Try to get current user
+      const data = await getMe();
       setUser(data.user);
     } catch {
       try {
+        // If getMe fails, try to refresh the token
         await refresh();
       } catch {
+        // If refresh fails, clear auth state
         setUser(null);
         setAccessToken(null);
+        setApiAccessToken(null);
+        sessionStorage.removeItem("accessToken");
       }
     } finally {
       setLoading(false);
     }
   };
 
+  // Initialize auth state on mount
   useEffect(() => {
     loadUser();
   }, []);
+
+  // Store/clear access token in sessionStorage when it changes
+  useEffect(() => {
+    if (accessToken) {
+      sessionStorage.setItem("accessToken", accessToken);
+    } else {
+      sessionStorage.removeItem("accessToken");
+    }
+  }, [accessToken]);
 
   return (
     <AuthContext.Provider
@@ -93,3 +119,4 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+

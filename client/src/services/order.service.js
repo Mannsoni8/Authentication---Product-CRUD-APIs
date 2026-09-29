@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "./api.js";
 
 export const createOrder = async () => {
   const response = await api.post("/orders");

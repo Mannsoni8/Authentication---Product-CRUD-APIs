@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   removeFromCart,
   updateCartItem,
-} from "../../services/cart.service";
+} from "../../services/cart.service.js";
 
 const CartItem = ({ item, onCartUpdate }) => {
   const [loading, setLoading] = useState(false);
@@ -42,8 +42,8 @@ const CartItem = ({ item, onCartUpdate }) => {
   };
 
   return (
-    <div className="flex items-center gap-5 border-b border-gray-200 py-5">
-      <div className="h-24 w-24 shrink-0 rounded-lg bg-gray-100">
+    <div className="flex items-center gap-5 border-b border-gray-200 dark:border-gray-700 py-5">
+      <div className="h-24 w-24 shrink-0 rounded-lg bg-gray-100 dark:bg-gray-700">
         {item.product?.image && (
           <img
             src={item.product.image}
@@ -54,11 +54,11 @@ const CartItem = ({ item, onCartUpdate }) => {
       </div>
 
       <div className="flex-1">
-        <h2 className="font-semibold text-gray-900">
+        <h2 className="font-semibold text-gray-900 dark:text-white">
           {item.product?.name}
         </h2>
 
-        <p className="mt-1 text-gray-500">
+        <p className="mt-1 text-gray-500 dark:text-gray-400">
           ₹{item.product?.price}
         </p>
       </div>
@@ -70,12 +70,12 @@ const CartItem = ({ item, onCartUpdate }) => {
             handleQuantityChange(item.quantity - 1)
           }
           disabled={loading || item.quantity === 1}
-          className="h-9 w-9 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          className="h-9 w-9 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50 transition"
         >
           -
         </button>
 
-        <span className="w-6 text-center font-medium">
+        <span className="w-6 text-center font-medium text-gray-900 dark:text-white">
           {item.quantity}
         </span>
 
@@ -85,7 +85,7 @@ const CartItem = ({ item, onCartUpdate }) => {
             handleQuantityChange(item.quantity + 1)
           }
           disabled={loading}
-          className="h-9 w-9 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          className="h-9 w-9 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50 transition"
         >
           +
         </button>
@@ -95,7 +95,7 @@ const CartItem = ({ item, onCartUpdate }) => {
         type="button"
         onClick={handleRemove}
         disabled={loading}
-        className="text-sm font-medium text-red-500 hover:text-red-700 disabled:opacity-50"
+        className="text-sm font-medium text-red-500 hover:text-red-700 disabled:opacity-50 transition"
       >
         Remove
       </button>
