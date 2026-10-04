@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router";
+
 import Home from "../pages/Home.jsx";
 import Layout from "../components/layout/Layout.jsx";
 import Login from "../pages/auth/Login.jsx";
@@ -8,7 +9,12 @@ import ProductDetails from "../pages/products/ProductDetails.jsx";
 import Cart from "../pages/cart/Cart.jsx";
 import Orders from "../pages/orders/Orders.jsx";
 import OrderDetails from "../pages/orders/OrderDetails.jsx";
+
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
+
+import AdminDashboard from "../pages/admin/AdminDashboard.jsx";
+import AdminRoute from "../components/AdminRoutes.jsx";
+import AdminProducts from "../pages/admin/AdminProducts.jsx";
 
 const router = createBrowserRouter([
   {
@@ -18,33 +24,49 @@ const router = createBrowserRouter([
         path: "/",
         element: <Home />,
       },
+
       {
         path: "/login",
         element: <Login />,
       },
+
       {
         path: "/register",
         element: <Register />,
       },
+
       {
         path: "/products",
         element: <Products />,
       },
+
       {
         path: "/products/:id",
         element: <ProductDetails />,
       },
+
       {
         path: "/cart",
         element: <ProtectedRoute element={<Cart />} />,
       },
+
       {
         path: "/orders",
         element: <ProtectedRoute element={<Orders />} />,
       },
+
       {
         path: "/orders/:id",
         element: <ProtectedRoute element={<OrderDetails />} />,
+      },
+
+      {
+        path: "/admin",
+        element: <AdminRoute element={<AdminDashboard />} />,
+      },
+      {
+        path: "/admin/products",
+        element: <AdminRoute element={<AdminProducts />} />,
       },
     ],
   },

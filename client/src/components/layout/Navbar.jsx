@@ -1,4 +1,4 @@
-import { NavLink, Link, useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import useAuth from "../../hooks/useAuth";
 // import { useTheme } from "../../context/ThemeContext";
 import { useState } from "react";
@@ -19,16 +19,14 @@ const Navbar = () => {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link
+          <NavLink
             to="/"
-            className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition"
-          >
+            className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition">
             <svg
               className="h-8 w-8 text-indigo-600 dark:text-indigo-400"
               fill="none"
               viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+              stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -37,7 +35,7 @@ const Navbar = () => {
               />
             </svg>
             <span className="hidden sm:block">ShopHub</span>
-          </Link>
+          </NavLink>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:gap-6">
@@ -49,8 +47,7 @@ const Navbar = () => {
                     ? "text-indigo-600 dark:text-indigo-400"
                     : "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
                 }`
-              }
-            >
+              }>
               Home
             </NavLink>
 
@@ -62,8 +59,7 @@ const Navbar = () => {
                     ? "text-indigo-600 dark:text-indigo-400"
                     : "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
                 }`
-              }
-            >
+              }>
               Products
             </NavLink>
 
@@ -77,8 +73,7 @@ const Navbar = () => {
                         ? "text-indigo-600 dark:text-indigo-400"
                         : "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
                     }`
-                  }
-                >
+                  }>
                   Cart
                 </NavLink>
 
@@ -90,53 +85,28 @@ const Navbar = () => {
                         ? "text-indigo-600 dark:text-indigo-400"
                         : "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
                     }`
-                  }
-                >
+                  }>
                   Orders
                 </NavLink>
+                {user?.role === "admin" && (
+                  <NavLink
+                    to="/admin"
+                    className={({ isActive }) =>
+                      `text-sm font-medium transition ${
+                        isActive
+                          ? "text-indigo-600 dark:text-indigo-400"
+                          : "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+                      }`
+                    }>
+                    Admin
+                  </NavLink>
+                )}
               </>
             )}
           </div>
 
           {/* Right side actions */}
           <div className="flex items-center gap-3">
-            {/* Theme Toggle */}
-            {/* <button
-              onClick={toggleTheme}
-              className="rounded-lg p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-              aria-label="Toggle theme"
-            >
-              {theme === "light" ? (
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                  />
-                </svg>
-              )}
-            </button> */}
-
             {/* User menu or auth buttons */}
             {user ? (
               <div className="hidden md:flex md:items-center md:gap-3">
@@ -145,8 +115,7 @@ const Navbar = () => {
                 </span>
                 <button
                   onClick={handleLogout}
-                  className="rounded-lg bg-gray-100 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
-                >
+                  className="rounded-lg bg-gray-100 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
                   Logout
                 </button>
               </div>
@@ -154,14 +123,12 @@ const Navbar = () => {
               <div className="hidden md:flex md:items-center md:gap-2">
                 <NavLink
                   to="/login"
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                >
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                   Login
                 </NavLink>
                 <NavLink
                   to="/register"
-                  className="rounded-lg bg-indigo-600 dark:bg-indigo-500 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 dark:hover:bg-indigo-600 transition"
-                >
+                  className="rounded-lg bg-indigo-600 dark:bg-indigo-500 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 dark:hover:bg-indigo-600 transition">
                   Sign Up
                 </NavLink>
               </div>
@@ -170,14 +137,12 @@ const Navbar = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden rounded-lg p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-            >
+              className="md:hidden rounded-lg p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
               <svg
                 className="h-6 w-6"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+                stroke="currentColor">
                 {mobileMenuOpen ? (
                   <path
                     strokeLinecap="round"
@@ -212,8 +177,7 @@ const Navbar = () => {
                     ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`
-              }
-            >
+              }>
               Home
             </NavLink>
 
@@ -226,8 +190,7 @@ const Navbar = () => {
                     ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`
-              }
-            >
+              }>
               Products
             </NavLink>
 
@@ -242,8 +205,7 @@ const Navbar = () => {
                         ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
                         : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     }`
-                  }
-                >
+                  }>
                   Cart
                 </NavLink>
 
@@ -256,10 +218,23 @@ const Navbar = () => {
                         ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
                         : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     }`
-                  }
-                >
+                  }>
                   Orders
                 </NavLink>
+                {user.role === "admin" && (
+                  <NavLink
+                    to="/admin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `block rounded-lg px-3 py-2 text-base font-medium transition ${
+                        isActive
+                          ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      }`
+                    }>
+                    Admin
+                  </NavLink>
+                )}
               </>
             )}
 
@@ -274,8 +249,7 @@ const Navbar = () => {
                       handleLogout();
                       setMobileMenuOpen(false);
                     }}
-                    className="block w-full text-left rounded-lg px-3 py-2 text-base font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-                  >
+                    className="block w-full text-left rounded-lg px-3 py-2 text-base font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
                     Logout
                   </button>
                 </>
@@ -284,15 +258,13 @@ const Navbar = () => {
                   <NavLink
                     to="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block rounded-lg px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                  >
+                    className="block rounded-lg px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                     Login
                   </NavLink>
                   <NavLink
                     to="/register"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block rounded-lg px-3 py-2 text-base font-medium bg-indigo-600 dark:bg-indigo-500 text-white hover:bg-indigo-700 dark:hover:bg-indigo-600 transition mt-2"
-                  >
+                    className="block rounded-lg px-3 py-2 text-base font-medium bg-indigo-600 dark:bg-indigo-500 text-white hover:bg-indigo-700 dark:hover:bg-indigo-600 transition mt-2">
                     Sign Up
                   </NavLink>
                 </>
